@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css">
+    <script type="text/javascript" src="form.js"></script>
+
+    <title>Grid Table</title>
+</head>
+
+<body>
+    <div include="nav.html"></div>
+    <div class="container-fluid">
+        <h1 class="py-3">Product</h1>
+        <div class="d-flex justify-content-between pb-1">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal">Add New</button>
+            <input class="form-control w-50" id="search" type="search" placeholder="Search" aria-label="Search">
+        </div>
+        <table id="data1" class="table table-striped table-bordered table-sm">
+        </table>
+
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form">
+                        <div class="mb-3">
+                            <label for="id">ID</label>
+                            <input id="id" type="text" class="form-control form-bind" name="id" format="id"></div>
+                        <div class="mb-3">
+                            <label for="name">Name</label>
+                            <input id="name" type="text" class="form-control form-bind" name="name"></div>
+                        <div class="mb-3">
+                            <label for="price">Price</label>
+                            <input id="price" type="text" class="form-control form-bind" name="price" format="number" required></div>
+                        <div class="mb-3">
+                            <label for="unit">Unit</label>
+                            <input id="unit" type="text" class="form-control form-bind" name="unit" required></div>
+                        <div class="mb-3">
+                            <label for="date">Date</label>
+                            <input id="date" type="text" class="form-control form-bind" name="date" format="dmy"></div>
+                        <div class="mb-3">
+                            <label for="note">Note</label>
+                            <textarea id="note" type="text" class="form-control form-bind" name="note"></textarea></div>
+                        <div class="mb-3">
+                            <label for="active">Active</label>
+                            <input id="active" type="checkbox" class="form-bind" name="active"></div>
+                        <div class="mb-3">
+                            <label for="last">Last</label>
+                            <input id="last" type="text" name="last" class="form-control form-bind" format="fromnow" readonly></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="form1.clear()">Clear</button>
+                    <button class="btn btn-primary" onclick="rest.post()">Add</button>
+                    <button class="btn btn-success" onclick="rest.put()">Update</button>
+                    <button class="btn btn-danger" onclick="rest.delete()">Delete</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div include="foot.html"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        const api = "api/product"
+        let gridconf = {
+            firstcolumn: {
+                title: "",
+                render: (r, d, i) => `${i+1}`,
+                cellclick: function(r) {
+                    rest.get(r["id"])
+                    formModal.show()
+                },
+                className: "text-muted"
+            },
+            page: 1
+
+        }
+        let tbo = grid("#data1", api, gridconf)
+
+        var form1 = binder({
+            selector: ".form-bind"
+        });
+
+        var rest = restful(api, form1, {
+            success: function(method, d) {
+                toast("Notify", method + " Successful")
+                tbo.reload()
+            }
+        })
+
+        // datalist("#name", "api/user", (v, d) => {
+        //     form.set("note", v)
+        // })
+
+        include();
+        document.querySelector("#search").addEventListener("input", function() {
+            tbo.search(this.value)
+        })
+        document.querySelector("#id.form-bind").addEventListener("keydown", function(e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                rest.get(this.value);
+
+            }
+        })
+        var formModal = new bootstrap.Modal(document.getElementById('formModal'), {
+            keyboard: false
+        })
+    </script>
+
+</body>
+
+</html>

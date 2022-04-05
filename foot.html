@@ -1,0 +1,55 @@
+<!-- Toast -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1051">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi-alarm" style="font-size: 2rem; color: cornflowerblue;"></i>
+            <strong class="me-auto">Bootstrap</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Hello, world! This is a toast message.
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModal-title">Confirm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmModal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirm-yes">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function toast(title, content) {
+        var toastLiveExample = document.querySelector('#liveToast')
+        document.querySelector(".toast-body").innerHTML = content
+        document.querySelector(".me-auto").innerHTML = title
+        var toast = new bootstrap.Toast(toastLiveExample)
+        toast.show()
+    }
+    var confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'), {
+        keyboard: false
+    })
+    document.querySelector("#confirm-yes").addEventListener("click", function() {
+        confirmModal.onYes()
+        confirmModal.hide()
+    })
+
+    function confirm(title, content, onYes) {
+        document.querySelector("#confirmModal-body").innerHTML = content
+        document.querySelector("#confirmModal-title").innerHTML = title
+        confirmModal.onYes = onYes
+        confirmModal.show()
+    }
+</script>

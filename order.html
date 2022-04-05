@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css">
+
+
+    <script type="text/javascript" src="form.js"></script>
+
+    <title>Grid Table</title>
+</head>
+
+<body>
+    <div include="nav.html"></div>
+    <div class="container-fluid">
+        <h1 class="py-3">Order</h1>
+        <div class="row mb-2">
+            <div class="col-md-3">
+                <label for="id">ID</label>
+                <input id="id" type="text" class="form-control form-bind" name="id" format="id">
+            </div>
+            <div class="col-md-3"><label for="date">Date</label>
+                <input id="date" type="text" class="form-control form-bind" name="date" format="dmy"></div>
+            <div class="col-md-6">
+                <label for="name">Name</label>
+                <input id="name" type="text" class="form-control form-bind" name="name"></div>
+            <div class="col-md-3">
+                <label for="phone">Phone</label>
+                <input id="phone" type="text" class="form-control form-bind" name="phone" required pattern="[0-9]+"></div>
+            <div class="col-md-4">
+                <label for="subtotal">Subtotal</label>
+                <input id="subtotal" type="text" class="form-control text-end form-bind" name="subtotal" format="number" value="0"></div>
+        </div>
+
+
+        <table id="data2" class="table table-striped table-bordered table-sm form-bind" name="order">
+            <thead>
+                <tr>
+                    <th action="no" style="width: 50px;"></th>
+                    <th name="id" sortable="true">ID</th>
+                    <th name="name">Name</th>
+                    <th name="qty" format="number" className="text-end">Qty</th>
+                    <th name="price" format="number" className="text-end">Price</th>
+                    <th name="total" format="number" className="text-end">Total</th>
+                    <th action="delete"></th>
+                </tr>
+            </thead>
+        </table>
+        <div class="input-group">
+            <button class="btn btn-primary" onclick="rest.post()">Add</button>
+            <button class="btn btn-success" onclick="rest.put()">Update</button>
+            <button class="btn btn-danger" onclick="rest.delete()">Delete</button>
+        </div>
+    </div>
+
+
+    </div>
+    <div include="foot.html"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        const api = "api/order"
+        include();
+
+        var form = binder({
+            selector: ".form-bind"
+        })
+
+        form.onChangeRow = function(tb, data, field) {
+            if (field == "order") {
+                let sum = 0
+                for (r of data) {
+                    r["total"] = r["qty"] * r["price"]
+                    sum += r["total"]
+                }
+                form.update("subtotal", sum)
+            }
+        }
+
+        var rest = restful(api, form, {
+            success: function(method, d) {
+                toast("Notify", method + " Successful")
+                tbo.reload()
+            }
+        })
+
+
+
+
+
+        document.querySelector("#id.form-bind").addEventListener("keydown", function(e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                rest.get(this.value);
+
+            }
+        })
+
+        let tbo = grid("#data2", [], {
+
+            onAction: function(action, r, d, i) {
+                console.log(action, r, d, i)
+
+                if (action == "delete") {
+
+                    confirm("Delete", "Are you delete?", function() {
+                        form.deleteRow("order", i)
+
+                    })
+
+                }
+                if (action == "add") {
+                    let r = tbo.formAdd.getData();
+                    form.addRow("order", r)
+                    tbo.formAdd.clear()
+
+                }
+
+                if (action == "change") {
+                    form.updateRow("order", r, i)
+
+                }
+
+
+
+            },
+            addRow: true,
+            editRow: true
+        })
+
+        tbo.formAdd.onChange = function(el, value, field, r) {
+            if (field == "qty" || field == "price") {
+
+                tbo.formAdd.update("total", r["price"] * r["qty"])
+            }
+        }
+
+        var myurl = new URL(window.location.href)
+
+        let id = myurl.searchParams.get("id")
+        if (id) {
+            form.ctrs.id.setValue(id)
+            rest.get(id);
+        }
+
+        datalist(tbo.formAdd.ctrs.id, "api/product", (v, d) => {
+            //console.log(v, d)
+            tbo.formAdd.update("name", d["name"])
+            tbo.formAdd.update("price", d["price"])
+
+        })
+        datalist(tbo.formEdit.ctrs.id, "api/product", (v, d) => {
+            //console.log(v, d)
+            tbo.formEdit.update("id", d["id"])
+            tbo.formEdit.update("name", d["name"])
+            tbo.formEdit.update("price", d["price"])
+
+        })
+    </script>
+
+</body>
+
+</html>
